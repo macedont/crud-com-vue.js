@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vue Contatos</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container" id="app">
+        <div class="row mt-5">
+            <div class="col-12 border-bottom mb-5 d-flex justify-content-between align-items-center">
+                <h2 :title="ex">{{name}}</h2> <!--v-bind é os : como short-->
+                <p>{{contactCount}}</p>
+            </div>
+
+            <div class="col-4">
+
+                <form action="">
+
+                    <div class="form-group mr-1">
+                        <label>Nome</label>
+                        <input type="text" class="form-control" placeholder="Nome Completo..." v-model="contact.name">
+                    </div>
+
+                    <div class="form-group mr-1">
+                        <label>E-mail</label>
+                        <input type="email" class="form-control" placeholder="Seu melhor email..." v-model="contact.email">
+                    </div>
+
+                    <div class="form-group mr-1">
+                        <label>Contato</label>
+                        <input type="phone" class="form-control" placeholder="Telefone/Celular" v-model="contact.phone">
+                    </div>
+
+                    <div class="form-group ml-1">
+                        <button class="btn btn-lg btn-rounded btn-success" v-if="!isEdit" v-on:click.prevent="saveContact(contact)">Criar Contato</button>
+                    </div>
+
+                    <div class="form-group ml-1">
+                        <button class="btn btn-lg btn-rounded btn-primary" v-if="isEdit" v-on:click.prevent="updateContact(contact)">Atualizar Contato</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="col-8 border-left">
+                <div class="contact" v-if="contacts.length">
+                    
+                    <div class="col-12 mb-2" v-for="contact in contacts">
+
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">{{contact.name}}</h5>
+
+                                <p class="card-text">{{contact.email}}, {{contact.phone}}</p>
+
+                                <a href="#" class="btn btn-sm btn-primary" @click.prevent="editContact(contact)">EDITAR</a>
+                                <a href="#" class="btn btn-sm btn-danger" @click.prevent="deleteItem(contact.id)">DELETAR</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div v-else class="alert alert-warning">
+                    <div>Não há nenhum contato cadastrado</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    <script>
+        let app = new Vue({
+            el: "#app",
+            data: {
+                name: 'Contatos App',
+                contacts: [],
+                contact: {
+                    name: '',
+                    email: '',
+                    phone: '',
+                    id: ''
+                },
+                isEdit: false,
+                ex: "Meu app de contatos"
+            },
+            computed: {
+                contactCount(){
+                    return `Total de contatos é ${this.contacts.length}`;
+                }
+            },
+            created() {
+                this.contacts = JSON.parse(localStorage.getItem('contactsApp'));
+            },
+            methods: {
+                saveContact(contact){
+                    let contacts = localStorage.getItem('contactsApp');
+
+                    contact.id = new Date().getTime();
+
+                    if(contacts){
+                        contacts = JSON.parse(contacts);
+                        contacts.push(contact);
+                    }else{
+                        contacts = [contact];
+                    }
+
+                    this.contacts = contacts;
+
+                    localStorage.setItem('contactsApp', JSON.stringify(contacts));
+                    location.reload();
+                    //this.contact = []; caso eu não queria atualizar a página pode usar esse metodo para limpar os campos após a inserção
+                },
+                deleteItem(id){
+                    let contacts = localStorage.getItem('contactsApp');
+
+                    if(!contacts) return false;
+                    contacts = JSON.parse(contacts);
+
+                    contacts = contacts.filter((contact) =>{
+                        return contact.id != id;
+                    });
+
+                    this.contacts = contacts;
+
+                    localStorage.setItem('contactsApp', JSON.stringify(contacts));
+                },
+                editContact(contact){
+                    this.contact = contact;
+                    this.isEdit = true;
+                },
+                updateContact(contact){
+                    let contacts = this.contacts.map(contactMap => {
+                        if(contactMap.id == contact.id){
+                            return contact;
+                        }
+                        return contactMap;
+                    });
+
+                    this.contacts = contacts;
+                    localStorage.setItem('contactsApp', JSON.stringify(contacts));
+                    location.reload();
+                }
+            }
+        });
+    </script>
+
+</body>
+</html>
